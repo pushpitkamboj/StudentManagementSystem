@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-Do List</title>
+<style>
+    /* CSS styling */
+    body {
+        font-family: 'Comic Sans MS', cursive, sans-serif; /* Cute font */
+        background-color: #fde0e0; /* Light pink background */
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
+    h1 {
+        text-align: center;
+        color: #ff6b6b; /* Reddish color for title */
+        margin-top: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Text shadow */
+    }
+    form {
+        text-align: center;
+        margin-top: 20px;
+    }
+    label {
+        font-size: 18px;
+        color: #333;
+    }
+    input[type="text"],
+    input[type="date"],
+    button {
+        padding: 12px 24px; /* Increased padding */
+        margin: 10px; /* Increased margin */
+        border: none; /* Removed border */
+        border-radius: 30px; /* Rounded corners */
+        font-size: 20px; /* Increased font size */
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Added shadow */
+    }
+    button {
+        background-color: #ff9f00; /* Orange color */
+        color: white;
+        font-weight: bold;
+        transition: background-color 0.3s ease; /* Smooth color transition */
+    }
+    button:hover {
+        background-color: #ffa94d; /* Darker orange color on hover */
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    li {
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Added shadow */
+    }
+    .deleteButton,
+    .editButton {
+        cursor: pointer;
+        font-size: 24px; /* Increased font size */
+        vertical-align: middle;
+        margin-left: 10px;
+        transition: color 0.3s ease; /* Smooth color transition */
+    }
+    .deleteButton:hover {
+        color: red;
+        animation: boom 0.5s ease-in-out; /* Firecracker animation */
+    }
+    .editButton:hover {
+        color: blue;
+    }
+    @keyframes boom {
+        0% { transform: scale(1); }
+        25% { transform: scale(1.2); }
+        50% { transform: scale(1); }
+        75% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    /* Style for back-to-home button */
+    .back-to-home {
+        position: fixed;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #ff6b6b; /* Reddish color */
+        color: white;
+        border: none;
+        border-radius: 50px; /* Circle shape */
+        font-size: 24px; /* Increased font size */
+        padding: 20px 40px; /* Increased padding */
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Added shadow */
+        transition: background-color 0.3s ease; /* Smooth color transition */
+    }
+    .back-to-home:hover {
+        background-color: #ff5252; /* Darker reddish color on hover */
+    }
+</style>
+</head>
+<body>
+
+<h1>To-Do List</h1>
+
+<form id="todoForm">
+    <label for="task">Task:</label>
+    <input type="text" id="task" name="task" required>
+    <br>
+    <label for="deadlineCheckbox">Add Deadline:</label>
+    <input type="checkbox" id="deadlineCheckbox" name="deadlineCheckbox">
+    <div id="deadlineCalendar" style="display: none;">
+        <label for="deadline">Deadline:</label>
+        <input type="date" id="deadline" name="deadline">
+    </div>
+    <br>
+    <button type="submit">Add Task</button>
+</form>
+
+<ul id="todoList">
+    <!-- To-do tasks will be added dynamically here -->
+</ul>
+
+<a href="index.html"><button class="back-to-home">Back to Home</button></a>
+
+<script>
+    // JavaScript code
+    document.getElementById('deadlineCheckbox').addEventListener('change', function() {
+        var deadlineCalendar = document.getElementById('deadlineCalendar');
+        deadlineCalendar.style.display = this.checked ? 'block' : 'none';
+        // Reset the required attribute for the deadline input
+        document.getElementById('deadline').required = this.checked;
+    });
+
+    document.getElementById('todoForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission
+
+        var taskInput = document.getElementById('task');
+        var task = taskInput.value.trim();
+
+        if (!task) {
+            alert('Please enter a task.');
+            return;
+        }
+
+        var deadlineCheckbox = document.getElementById('deadlineCheckbox');
+        var deadlineInput = document.getElementById('deadline');
+        var deadline = deadlineCheckbox.checked ? deadlineInput.value : '';
+
+        addTaskToList(task, deadline);
+
+        // Reset form
+        taskInput.value = '';
+        deadlineCheckbox.checked = false;
+        deadlineInput.value = '';
+        document.getElementById('deadlineCalendar').style.display = 'none';
+        // Reset the required attribute for the deadline input
+        deadlineInput.required = false;
+    });
+
+    function addTaskToList(task, deadline) {
+        var todoList = document.getElementById('todoList');
+        var li = document.createElement('li');
+        
+        var taskSpan = document.createElement('span');
+        taskSpan.textContent = task;
+        if (deadline) {
+            taskSpan.textContent += ' (Deadline: ' + deadline + ')';
+        }
+        taskSpan.contentEditable = true; // Make the task text editable
+        
+        var deleteButton = document.createElement('span');
+        deleteButton.textContent = '❌';
+        deleteButton.classList.add('deleteButton');
+        deleteButton.addEventListener('click', function() {
+            li.remove();
+            deleteButton.classList.add('boom'); // Add boom class for animation
+            setTimeout(function() {
+                deleteButton.classList.remove('boom'); // Remove boom class after animation
+            }, 500);
+        });
+
+        var editButton = document.createElement('span');
+        editButton.textContent = '✎';
+        editButton.classList.add('editButton');
+        editButton.addEventListener('click', function() {
+            taskSpan.focus(); // Focus on the task text span for editing
+        });
+
+        // Update all tasks with the same deadline when finished editing
+        taskSpan.addEventListener('blur', function() {
+            var newTask = taskSpan.textContent.trim();
+            if (newTask !== '') {
+                taskSpan.textContent = newTask;
+                if (deadline) {
+                    taskSpan.textContent += ' (Deadline: ' + deadline + ')';
+                }
+            }
+        });
+
+        li.appendChild(taskSpan);
+        li.appendChild(deleteButton);
+        li.appendChild(editButton);
+        todoList.appendChild(li);
+
+        if (deadline) {
+            checkDeadline(deadline);
+        }
+    }
+
+    function checkDeadline(deadline) {
+        var deadlineDate = new Date(deadline);
+        var currentTime = new Date();
+        var timeDifference = deadlineDate.getTime() - currentTime.getTime();
+        if (timeDifference > 0) {
+            setTimeout(function() {
+                showNotification('Deadline approaching!', 'The deadline for a task is approaching.');
+            }, timeDifference);
+        }
+    }
+
+    function showNotification(title, message) {
+        if (Notification.permission === 'granted') {
+            var notification = new Notification(title, {
+                body: message,
+                icon: 'https://via.placeholder.com/50'
+            });
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(function(permission) {
+                if (permission === 'granted') {
+                    var notification = new Notification(title, {
+                        body: message,
+                        icon: 'https://via.placeholder.com/50'
+                    });
+                }
+            });
+        }
+    }
+
+    // Function to scroll back to top of the page
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Add event listener to back-to-home button
+    document.querySelector('.back-to-home').addEventListener('click', scrollToTop);
+</script>
+
+</body>
+</html>

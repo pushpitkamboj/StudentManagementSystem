@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .mark-attendance {
+      cursor: pointer;
+      color: blue;
+    }
+    .holiday {
+      background-color: #ffc0cb;
+    }
+    #attendance-summary {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Attendance Tracker</h1>
+
+  <div id="timetable"></div>
+  <div id="attendance-summary"></div>
+
+  <script>
+    // Sample data (static timetable and academic calendar)
+    const timetableData = {
+      Monday: { 'Subject 1': true, 'Subject 2': true, 'Subject 3': false },
+      Tuesday: { 'Subject 1': true, 'Subject 2': true, 'Subject 3': true },
+      Wednesday: { 'Subject 1': true, 'Subject 2': false, 'Subject 3': true },
+      // ... continue for other days
+    };
+
+    const academicCalendar = {
+      '2024-02-25': true, // Marked as a holiday
+      '2024-02-28': false, // Working day
+      // ... continue for other days
+    };
+
+    // Function to create the timetable HTML
+    function createTimetable() {
+      const timetableDiv = document.getElementById('timetable');
+      const currentDate = new Date().toISOString().split('T')[0];
+
+      let tableHTML = '<table>';
+      tableHTML += '<tr><th>Day</th>';
+      
+      // Iterate over the subjects to create table headers
+      const subjects = Object.keys(timetableData.Monday);
+      tableHTML += subjects.map(subject => `<th>${subject}</th>`).join('');
+
+      tableHTML += '</tr>';
+
+      // Iterate over each day and create rows
+      for (const day in timetableData) {
+        tableHTML += `<tr${academicCalendar[day] ? ' class="holiday"' : ''}><td>${day}</td>`;
+        
+        // Iterate over subjects for each day and create columns
+        subjects.forEach(subject => {
+          const isHoliday = academicCalendar[day] === true;
+          const canMarkAttendance = timetableData[day][subject] && !isHoliday;
+
+          // Add a form to mark attendance only if it's not a holiday and there is a class for the subject
+          if (canMarkAttendance) {
+            tableHTML += `<td>
+                            <form onsubmit="markAttendance(event, '${day}', '${subject}')">
+                              <select name="attendanceStatus">
+                                <option value="P">P</option>
+                                <option value="A">A</option>
+                              </select>
+                              <input type="submit" value="Submit">
+                            </form>
+                          </td>`;
+          } else {
+            tableHTML += '<td></td>';
+          }
+        });
+
+        tableHTML += '</tr>';
+      }
+
+      tableHTML += '</table>';
+      timetableDiv.innerHTML = tableHTML;
+
+      // Update the attendance summary section
+      createAttendanceSummary(subjects, timetableData);
+    }
+
+    // Function to create the attendance summary
+    // Function to create the attendance summary
+function createAttendanceSummary(subjects, timetableData) {
+  const attendanceSummaryDiv = document.getElementById('attendance-summary');
+  let summaryHTML = '<h2>Attendance Summary</h2>';
+  
+  subjects.forEach(subject => {
+    let attendedCount = 0;
+    let totalClassesCount = 0;
+
+    // Iterate over each day to calculate attendance for the subject
+    for (const day in timetableData) {
+      const attendanceStatus = timetableData[day][subject];
+      if (attendanceStatus === true) {
+        attendedCount++;
+        totalClassesCount++;
+      } else if (attendanceStatus === false) {
+        totalClassesCount++;
+      }
+    }
+
+    // Calculate and display overall attendance percentage for the subject
+    const attendancePercentage = totalClassesCount > 0 ? (attendedCount / totalClassesCount) * 100 : 0;
+    summaryHTML += `<p>${subject}: ${attendancePercentage.toFixed(2)}%</p>`;
+  });
+  
+  attendanceSummaryDiv.innerHTML = summaryHTML;
+}
+
+    // Function to mark attendance
+    function markAttendance(event, day, subject) {
+      event.preventDefault();
+      const attendanceStatus = event.target.elements.attendanceStatus.value;
+      console.log(`Marked attendance for ${subject} on ${day} as ${attendanceStatus}`);
+      // Implement logic to send attendance data to server/database
+      // You can update timetableData and re-render the timetable
+      createAttendanceSummary(Object.keys(timetableData.Monday), timetableData);
+    }
+
+    // Initialize the timetable on page load
+    createTimetable();
+  </script>
+
+</body>
+</html>
